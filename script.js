@@ -7,8 +7,8 @@ const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 async function cargarPartidos() {
   const { data: partidos, error } = await client
     .from("partidos")
-    .select("*")
-    .order("torneo", { ascending: true })
+    .select("*, torneos(id, nombre)")
+    .order("torneo_id", { ascending: true })
     .order("fecha_partido", { ascending: true });
 
   if (error) {
@@ -22,11 +22,19 @@ async function cargarPartidos() {
   let torneoActual = undefined;
 
   partidos.forEach((partido) => {
-    // Si cambiamos de torneo, agregamos un subtítulo nuevo
-    if (partido.torneo !== torneoActual) {
-      torneoActual = partido.torneo;
+    if (partido.torneo_id !== torneoActual) {
+      torneoActual = partido.torneo_id;
       const subtitulo = document.createElement("h3");
-      subtitulo.textContent = torneoActual || "Sin torneo asignado";
+
+      if (partido.torneos) {
+        const link = document.createElement("a");
+        link.href = `torneo.html?id=${partido.torneos.id}`;
+        link.textContent = partido.torneos.nombre;
+        subtitulo.appendChild(link);
+      } else {
+        subtitulo.textContent = "Sin torneo asignado";
+      }
+
       contenedor.appendChild(subtitulo);
     }
 
@@ -119,15 +127,28 @@ btnLogout.addEventListener("click", async () => {
 
 async function actualizarEstadoUsuario() {
   const { data: { user } } = await client.auth.getUser();
+  const panelAdmin = document.getElementById("admin-resultado").parentElement;
 
   if (user) {
     usuarioActualTexto.textContent = "Conectado como: " + user.email;
     formLogin.querySelectorAll("input, #btn-registrarme, #btn-login").forEach(el => el.style.display = "none");
     btnLogout.style.display = "inline-block";
+    document.getElementById("panel-equipo-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
+document.getElementById("panel-partido-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
+
+    const { data: profile } = await client
+      .from("profiles")
+      .select("rol")
+      .eq("id", user.id)
+      .single();
+
+    panelAdmin.style.display = (profile && profile.rol === "admin") ? "block" : "none";
+    document.getElementById("panel-torneo-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
   } else {
     usuarioActualTexto.textContent = "";
     formLogin.querySelectorAll("input, #btn-registrarme, #btn-login").forEach(el => el.style.display = "inline-block");
     btnLogout.style.display = "none";
+    panelAdmin.style.display = "none";
   }
 }
 
@@ -272,3 +293,112 @@ async function cargarRanking() {
 }
 
 cargarRanking();
+
+document.getElementById("btn-crear-torneo").addEventListener("click", async () => {
+  const nombre = document.getElementById("nuevo-torneo-nombre").value;
+  const formato = document.getElementById("nuevo-torneo-formato").value;
+  const premio = document.getElementById("nuevo-torneo-premio").value;
+
+  if (!nombre) {
+    alert("El torneo necesita al menos un nombre.");
+    return;
+  }
+
+  const { error } = await client.from("torneos").insert({
+    nombre,
+    formato,
+    premio,
+  });
+
+  if (error) {
+    console.error("Error creando torneo:", error);
+    alert("Hubo un error creando el torneo.");
+    return;
+  }
+
+  alert("¡Torneo creado!");
+  document.getElementById("nuevo-torneo-nombre").value = "";
+  document.getElementById("nuevo-torneo-formato").value = "";
+  document.getElementById("nuevo-torneo-premio").value = "";
+});
+
+async function poblarSelectsTorneos() {
+  const { data: torneos, error } = await client.from("torneos").select("id, nombre");
+  if (error) {
+    console.error("Error trayendo torneos:", error);
+    return;
+  }
+
+  [document.getElementById("select-torneo-equipo"), document.getElementById("select-torneo-partido")]
+    .forEach((select) => {
+      select.innerHTML = "";
+      torneos.forEach((torneo) => {
+        const opcion = document.createElement("option");
+        opcion.value = torneo.id;
+        opcion.textContent = torneo.nombre;
+        select.appendChild(opcion);
+      });
+    });
+}
+
+document.getElementById("btn-agregar-equipo").addEventListener("click", async () => {
+  const torneoId = document.getElementById("select-torneo-equipo").value;
+  const nombreEquipo = document.getElementById("nuevo-equipo-nombre").value;
+  const estado = document.getElementById("nuevo-equipo-estado").value || "0-0";
+
+  if (!nombreEquipo) {
+    alert("Falta el nombre del equipo.");
+    return;
+  }
+
+  const { error } = await client.from("torneo_equipos").insert({
+    torneo_id: torneoId,
+    nombre_equipo: nombreEquipo,
+    estado,
+  });
+
+  if (error) {
+    console.error("Error agregando equipo:", error);
+    alert("Hubo un error agregando el equipo.");
+    return;
+  }
+
+  alert("¡Equipo agregado!");
+  document.getElementById("nuevo-equipo-nombre").value = "";
+  document.getElementById("nuevo-equipo-estado").value = "";
+});
+
+document.getElementById("btn-crear-partido").addEventListener("click", async () => {
+  const torneoId = document.getElementById("select-torneo-partido").value;
+  const equipoA = document.getElementById("nuevo-partido-equipo-a").value;
+  const equipoB = document.getElementById("nuevo-partido-equipo-b").value;
+  const fecha = document.getElementById("nuevo-partido-fecha").value;
+
+  if (!equipoA || !equipoB || !fecha) {
+    alert("Completá equipo A, equipo B y la fecha.");
+    return;
+  }
+
+  const { error } = await client.from("partidos").insert({
+    torneo_id: torneoId,
+    equipo_a: equipoA,
+    equipo_b: equipoB,
+    fecha_partido: fecha,
+    estado_partido: "Programado",
+  });
+
+  if (error) {
+    console.error("Error creando partido:", error);
+    alert("Hubo un error creando el partido.");
+    return;
+  }
+
+  alert("¡Partido creado!");
+  document.getElementById("nuevo-partido-equipo-a").value = "";
+  document.getElementById("nuevo-partido-equipo-b").value = "";
+  document.getElementById("nuevo-partido-fecha").value = "";
+  cargarPartidos();
+  poblarSelectPartidos();
+});
+
+poblarSelectsTorneos();
