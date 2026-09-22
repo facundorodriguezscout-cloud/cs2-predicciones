@@ -18,6 +18,31 @@
   <button id="btn-cargar-resultado">Guardar resultado</button>
 </div>
 
+<div id="panel-torneo-nuevo">
+  <h2>Crear torneo (admin)</h2>
+  <input type="text" id="nuevo-torneo-nombre" placeholder="Nombre del torneo">
+  <input type="text" id="nuevo-torneo-formato" placeholder="Formato">
+  <input type="text" id="nuevo-torneo-premio" placeholder="Premio">
+  <button id="btn-crear-torneo">Crear torneo</button>
+</div>
+
+<div id="panel-equipo-nuevo">
+  <h2>Agregar equipo a torneo (admin)</h2>
+  <select id="select-torneo-equipo"></select>
+  <input type="text" id="nuevo-equipo-nombre" placeholder="Nombre del equipo">
+  <input type="text" id="nuevo-equipo-estado" placeholder="Récord (ej: 0-0)">
+  <button id="btn-agregar-equipo">Agregar equipo</button>
+</div>
+
+<div id="panel-partido-nuevo">
+  <h2>Crear partido (admin)</h2>
+  <select id="select-torneo-partido"></select>
+  <input type="text" id="nuevo-partido-equipo-a" placeholder="Equipo A">
+  <input type="text" id="nuevo-partido-equipo-b" placeholder="Equipo B">
+  <input type="datetime-local" id="nuevo-partido-fecha">
+  <button id="btn-crear-partido">Crear partido</button>
+</div>
+
 <hr>
 <h2>Ranking</h2>
 <div id="lista-ranking"></div>
