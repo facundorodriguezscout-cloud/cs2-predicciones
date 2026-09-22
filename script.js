@@ -127,7 +127,7 @@ btnLogout.addEventListener("click", async () => {
 
 async function actualizarEstadoUsuario() {
   const { data: { user } } = await client.auth.getUser();
-  const panelAdmin = document.getElementById("admin-resultado").parentElement;
+  const panelAdmin = document.getElementById("admin-resultado");
 
   if (user) {
     usuarioActualTexto.textContent = "Conectado como: " + user.email;
