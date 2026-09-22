@@ -133,8 +133,6 @@ async function actualizarEstadoUsuario() {
     usuarioActualTexto.textContent = "Conectado como: " + user.email;
     formLogin.querySelectorAll("input, #btn-registrarme, #btn-login").forEach(el => el.style.display = "none");
     btnLogout.style.display = "inline-block";
-    document.getElementById("panel-equipo-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
-document.getElementById("panel-partido-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
 
     const { data: profile } = await client
       .from("profiles")
@@ -142,13 +140,19 @@ document.getElementById("panel-partido-nuevo").style.display = (profile && profi
       .eq("id", user.id)
       .single();
 
-    panelAdmin.style.display = (profile && profile.rol === "admin") ? "block" : "none";
-    document.getElementById("panel-torneo-nuevo").style.display = (profile && profile.rol === "admin") ? "block" : "none";
+    const esAdmin = profile && profile.rol === "admin";
+    panelAdmin.style.display = esAdmin ? "block" : "none";
+    document.getElementById("panel-torneo-nuevo").style.display = esAdmin ? "block" : "none";
+    document.getElementById("panel-equipo-nuevo").style.display = esAdmin ? "block" : "none";
+    document.getElementById("panel-partido-nuevo").style.display = esAdmin ? "block" : "none";
   } else {
     usuarioActualTexto.textContent = "";
     formLogin.querySelectorAll("input, #btn-registrarme, #btn-login").forEach(el => el.style.display = "inline-block");
     btnLogout.style.display = "none";
     panelAdmin.style.display = "none";
+    document.getElementById("panel-torneo-nuevo").style.display = "none";
+    document.getElementById("panel-equipo-nuevo").style.display = "none";
+    document.getElementById("panel-partido-nuevo").style.display = "none";
   }
 }
 
