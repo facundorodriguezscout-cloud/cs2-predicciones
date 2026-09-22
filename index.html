@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CS2 Predicciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<hr>
+<h2>Cargar resultado (admin)</h2>
+<div id="admin-resultado">
+  <select id="select-partido"></select>
+  <input type="number" id="resultado-a" placeholder="Marcador A">
+  <input type="number" id="resultado-b" placeholder="Marcador B">
+  <button id="btn-cargar-resultado">Guardar resultado</button>
+</div>
+
+<hr>
+<h2>Ranking</h2>
+<div id="lista-ranking"></div>
+
+<body>
+  <h1>Próximos partidos</h1>
+
+  <div id="auth-section">
+  <p id="usuario-actual"></p>
+  <div id="form-login">
+    <input type="email" id="email-input" placeholder="Email">
+    <input type="password" id="password-input" placeholder="Contraseña">
+    <button id="btn-registrarme">Registrarme</button>
+    <button id="btn-login">Iniciar sesión</button>
+    <button id="btn-logout" style="display:none;">Cerrar sesión</button>
+  </div>
+</div>
+
+  <div id="lista-partidos"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
