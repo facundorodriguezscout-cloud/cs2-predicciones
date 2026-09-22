@@ -5,6 +5,8 @@ const { createClient } = supabase;
 const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function cargarPartidos() {
+  const { data: { user } } = await client.auth.getUser();
+
   const { data: partidos, error } = await client
     .from("partidos")
     .select("*, torneos(id, nombre)")
@@ -40,18 +42,29 @@ async function cargarPartidos() {
 
     const fila = document.createElement("div");
     fila.classList.add("fila-partido");
-    fila.innerHTML = `
-      <span>${partido.equipo_a}</span>
-      <input type="number" class="marcador-a" placeholder="0" min="0">
-      <span>vs</span>
-      <input type="number" class="marcador-b" placeholder="0" min="0">
-      <span>${partido.equipo_b}</span>
-      <span>${new Date(partido.fecha_partido).toLocaleDateString()}</span>
-      <button class="btn-predecir">Predecir</button>
-    `;
 
-    const boton = fila.querySelector(".btn-predecir");
-    boton.addEventListener("click", () => guardarPrediccion(partido.id, fila));
+    const controlesPrediccion = user
+      ? `
+        <input type="number" class="marcador-a" placeholder="0" min="0">
+        <span>vs</span>
+        <input type="number" class="marcador-b" placeholder="0" min="0">
+        <span>${partido.equipo_b}</span>
+        <span>${new Date(partido.fecha_partido).toLocaleDateString()}</span>
+        <button class="btn-predecir">Predecir</button>
+      `
+      : `
+        <span>vs</span>
+        <span>${partido.equipo_b}</span>
+        <span>${new Date(partido.fecha_partido).toLocaleDateString()}</span>
+        <span class="aviso-login">Iniciá sesión para predecir</span>
+      `;
+
+    fila.innerHTML = `<span>${partido.equipo_a}</span>` + controlesPrediccion;
+
+    if (user) {
+      const boton = fila.querySelector(".btn-predecir");
+      boton.addEventListener("click", () => guardarPrediccion(partido.id, fila));
+    }
 
     contenedor.appendChild(fila);
   });
@@ -154,6 +167,8 @@ async function actualizarEstadoUsuario() {
     document.getElementById("panel-equipo-nuevo").style.display = "none";
     document.getElementById("panel-partido-nuevo").style.display = "none";
   }
+
+  cargarPartidos();
 }
 
 actualizarEstadoUsuario();
