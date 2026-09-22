@@ -226,3 +226,9 @@ select {
   font-size: 13px;
   margin-bottom: 24px;
 }
+
+.aviso-login {
+  color: #A0A0A8;
+  font-size: 12px;
+  font-style: italic;
+}
